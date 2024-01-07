@@ -19,4 +19,5 @@ public class PasswordUtils {
     public static String decodePassword(String hashedPassword, String salt) {
         return new String(Base64.getDecoder().decode(hashedPassword)).replace(salt, "");
     }
+
 }

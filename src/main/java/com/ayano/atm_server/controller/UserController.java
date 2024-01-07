@@ -4,16 +4,13 @@ import com.ayano.atm_server.entity.Transaction;
 import com.ayano.atm_server.entity.User;
 import com.ayano.atm_server.param.*;
 import com.ayano.atm_server.service.*;
-import com.ayano.atm_server.service.Impl.SettingsServiceImpl;
 import com.ayano.atm_server.utils.PasswordUtils;
 import com.ayano.atm_server.utils.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.sql.SQLException;
+import java.util.List;
 
 @RestController
 public class UserController {
@@ -43,7 +40,7 @@ public class UserController {
             String username = loginRequest.getUsername();
             String password = loginRequest.getPassword();
             loginService.Login(username, password); // 如果验证错误会抛出异常
-            return new Response<String>("成功", 200, TextUtils.generateToken(username, "user"));
+            return new Response<String>("成功", 200, TextUtils.generateToken(username,"user"));
         } catch (Exception e) {
             return new Response<String>(e.getMessage(), 400, null);
         }
@@ -245,6 +242,35 @@ public class UserController {
         }
         settingsService.editUserInfo(request.getUsername(), request.getFullName(), request.getEmail(), request.getWhich());
         return new Response<>("成功", HttpStatus.OK.value(), "用户信息更新成功");
+    }
+    @PostMapping("/getBalance")
+    public Response<String> getBalance(@RequestBody TokenRequest tokenRequest){
+        String token = tokenRequest.getToken();
+        if (!TextUtils.validateToken(token)) {
+            return new Response<String>("当前token无效", 200, null);
+        }
+        String username=TextUtils.getUsernameFromToken(token);
+        System.out.println(username);
+        User user=userService.getUserByUsername(username);
+        if(user==null)
+            return new Response<String>("查无此人", 200, null);
+
+        return new Response<>("成功", HttpStatus.OK.value(), user.getCard().getBalance().toString());
+
+    }
+
+    @PostMapping("/getTransactions")
+    public Response<List<Transaction>> getTransactions(@RequestBody TokenRequest tokenRequest){
+        String token = tokenRequest.getToken();
+        if (!TextUtils.validateToken(token)) {
+            return new Response<List<Transaction>>("当前token无效", 200, null);
+        }
+        String username=TextUtils.getUsernameFromToken(token);
+        User user=userService.getUserByUsername(username);
+        if(user==null)
+            return new Response<>("查无此人", 200, null);
+
+        return new Response<>("成功", HttpStatus.OK.value(), user.getTransactions());
     }
 
 }

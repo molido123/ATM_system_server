@@ -51,10 +51,10 @@ public class SettingsServiceImpl implements com.ayano.atm_server.service.Setting
     public void editUserInfo(String username, String fullName, String email, String which) {
         User user=userDatabase.getUser(username);
         switch (which) {
-            case "fullName":
+            case "姓名":
                 updateUserInfo(username,fullName, user.getEmail());
                 break;
-            case "both":
+            case "全部":
                 updateUserInfo(username,fullName, email);
                 break;
         }
